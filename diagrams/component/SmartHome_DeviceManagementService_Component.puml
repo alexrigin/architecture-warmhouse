@@ -64,6 +64,5 @@ Rel(client, device_api, "HTTP-запросы", "REST (OpenAPI)")
 Rel(mqtt_client, mqtt_broker, "Команды/ответы", "MQTT")
 Rel(device_storage, database, "Хранение данных", "JDBC/ORM")
 
-'
 
 @enduml
