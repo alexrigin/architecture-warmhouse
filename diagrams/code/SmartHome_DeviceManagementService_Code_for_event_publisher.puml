@@ -1,0 +1,37 @@
+@startuml
+
+title Code Diagram for EventPublisher Component (DeviceManagement Service)
+
+class EventPublisher {
+  + EventPublisher
+  + {method} publishDeviceCreated(device: Device): void
+  + {method} publishDeviceUpdated(device: Device): void
+  - {method} sendToKafka(event: DeviceEvent): void
+}
+
+class Device {
+  + id: uuid
+  + name: String
+  + description: string
+  + type: string
+  + status: string
+  + serial_number: string
+  + mac_address: string
+  + manufacturer: string
+  + model: string
+  + ip_address: string
+}
+
+class DeviceEvent {
+  + eventId: uuid
+  + eventType: String
+  + deviceId: String
+  + timestamp: Instant
+  + payload: JsonNode
+}
+
+EventPublisher --> Device: "Использует"
+EventPublisher --> DeviceEvent: "Создает"
+DeviceEvent o-- Device: "Содержит данные"
+
+@enduml

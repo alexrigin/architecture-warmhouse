@@ -2,67 +2,42 @@
 
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+
 title Component Diagram for DeviceManagement Service
 
-Person(user, "User", "Администратор/пользователь")
+Container(api_gateway, "Api Gateway","", "Шлюз, отвечающий за балансировку, аутентификацию и маршрутизацию")
 
-System_Boundary(b1, "DeviceManagement Service") {
-  Component(api, "Device API", "REST API")
-  Component(service, "Device Service", "Бизнес-логика")
-  ComponentDb(repository, "Device Repository", "PostgreSQL")
-  Component(mqtt, "MQTT Client", "MQTT Broker")
-  ComponentDb(cache, "Device Cache", "Redis")
-  Component(eventbus, "Event Publisher", "Kafka")
+Container_Boundary(b1, "DeviceManagement Service") {
+  Component(device_api, "DeviceManagement API", "", "Обрабатывает HTTP-запросы")
+  Component(business_logic, "Business Logic", "Бизнес-логика")
+  Component(device_storage, "Device Storage", "Слой взаимодействия с БД")
+  Component(command_processor, "Command Processor", "Отправка команд устройствам\nОбработка ответов")
+  Component(event_publisher, "Event Publisher", "Публикует события в Kafka\n(DeviceCreated, DeviceUpdated)")
+  Component(mqtt_client, "MQTT Client", "Подключение к MQTT-брокеру\nОтправка команд/получение ответов")
+  Component(kafka_producer, "Kafka Producer", "Отправка событий в Kafka")
 }
 
-Rel(user, api, "HTTP/HTTPS", "REST API")
-Rel(api, service, "Вызов методов")
-Rel(service, repository, "JDBC", "CRUD операций")
-Rel(service, mqtt, "MQTT", "Отправка команд")
-Rel(service, cache, "Redis Protocol", "Кеш состояния")
-Rel(service, eventbus, "Kafka", "События")
+ContainerDb(devices_db, "Devices DB", "PostgreSQL", "", $tags = "storage")
+ContainerQueue(kafka, "Apache Kafka", "Топик: device-events")
+ContainerQueue(mqtt_broker, "MQTT Broker", "Топики: commands/, responses/")
 
-'Rel_L(mqtt, "IoT Device", "MQTT", "Команды")
-'Rel_R(eventbus, "Other Services", "Kafka", "События")
+Rel(api_gateway, device_api, "HTTP-запросы")
 
-'API, обработчик команд, менеджер состояния устройств.
+Rel(device_api, business_logic, "Внутренний вызов")
 
-@enduml
-
-@startuml DeviceManagement Service - Component Diagram (C4 Level 3)
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
-
-title Component Diagram for DeviceManagement Service
-
-' === Основные компоненты ===
-Component(device_api, "DeviceManagement API", "REST API (OpenAPI)\nОбрабатывает HTTP-запросы")
-Component(device_storage, "Device Storage", "База данных (PostgreSQL/MySQL)\nХранит метаданные устройств")
-Component(command_processor, "Command Processor", "Отправка команд устройствам\nОбработка ответов")
-Component(event_publisher, "Event Publisher", "Публикует события в Kafka\n(DeviceCreated, DeviceUpdated)")
-Component(mqtt_client, "MQTT Client", "Подключение к MQTT-брокеру\nОтправка команд/получение ответов")
-Component(kafka_producer, "Kafka Producer", "Отправка событий в Kafka")
-
-' === Внешние системы ===
-System_Ext(client, "Клиенты (UI/API)", "HTTP-клиенты (другие сервисы)")
-System_Ext(kafka, "Apache Kafka", "Топик: device-events")
-System_Ext(mqtt_broker, "MQTT Broker", "Топики: commands/, responses/")
-System_Ext(database, "Database", "PostgreSQL/MySQL")
-
-' === Связи между компонентами ===
-Rel(device_api, device_storage, "Чтение/запись данных", "SQL")
-Rel(device_api, command_processor, "Отправка команд", "REST/ gRPC")
-Rel(device_api, event_publisher, "Триггер событий", "Внутренний вызов")
-
+Rel(business_logic, command_processor, "Отправка команд", "Внутренний вызов")
 Rel(command_processor, mqtt_client, "Отправка команд", "MQTT")
 Rel(mqtt_client, command_processor, "Ответы устройств", "MQTT")
-
-Rel(event_publisher, kafka_producer, "Публикация", "Kafka API")
-Rel(kafka_producer, kafka, "Отправка событий", "Kafka Protocol")
-
-' === Внешние взаимодействия ===
-Rel(client, device_api, "HTTP-запросы", "REST (OpenAPI)")
 Rel(mqtt_client, mqtt_broker, "Команды/ответы", "MQTT")
-Rel(device_storage, database, "Хранение данных", "JDBC/ORM")
 
+Rel(business_logic, event_publisher, "Отправка событий", "Внутренний вызов")
+Rel(event_publisher, kafka_producer, "Отправка событий")
+Rel(kafka_producer, kafka, "Публикация событий")
+
+Rel(business_logic, device_storage, "Запись/получение данных из БД", "Внутренний вызов")
+Rel(device_storage, devices_db, "Хранение данных")
+
+SHOW_LEGEND()
 
 @enduml
