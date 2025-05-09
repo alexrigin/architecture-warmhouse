@@ -1,0 +1,69 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for DeviceManagement Service
+
+Person(user, "User", "Администратор/пользователь")
+
+System_Boundary(b1, "DeviceManagement Service") {
+  Component(api, "Device API", "REST API")
+  Component(service, "Device Service", "Бизнес-логика")
+  ComponentDb(repository, "Device Repository", "PostgreSQL")
+  Component(mqtt, "MQTT Client", "MQTT Broker")
+  ComponentDb(cache, "Device Cache", "Redis")
+  Component(eventbus, "Event Publisher", "Kafka")
+}
+
+Rel(user, api, "HTTP/HTTPS", "REST API")
+Rel(api, service, "Вызов методов")
+Rel(service, repository, "JDBC", "CRUD операций")
+Rel(service, mqtt, "MQTT", "Отправка команд")
+Rel(service, cache, "Redis Protocol", "Кеш состояния")
+Rel(service, eventbus, "Kafka", "События")
+
+'Rel_L(mqtt, "IoT Device", "MQTT", "Команды")
+'Rel_R(eventbus, "Other Services", "Kafka", "События")
+
+'API, обработчик команд, менеджер состояния устройств.
+
+@enduml
+
+@startuml DeviceManagement Service - Component Diagram (C4 Level 3)
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram for DeviceManagement Service
+
+' === Основные компоненты ===
+Component(device_api, "DeviceManagement API", "REST API (OpenAPI)\nОбрабатывает HTTP-запросы")
+Component(device_storage, "Device Storage", "База данных (PostgreSQL/MySQL)\nХранит метаданные устройств")
+Component(command_processor, "Command Processor", "Отправка команд устройствам\nОбработка ответов")
+Component(event_publisher, "Event Publisher", "Публикует события в Kafka\n(DeviceCreated, DeviceUpdated)")
+Component(mqtt_client, "MQTT Client", "Подключение к MQTT-брокеру\nОтправка команд/получение ответов")
+Component(kafka_producer, "Kafka Producer", "Отправка событий в Kafka")
+
+' === Внешние системы ===
+System_Ext(client, "Клиенты (UI/API)", "HTTP-клиенты (другие сервисы)")
+System_Ext(kafka, "Apache Kafka", "Топик: device-events")
+System_Ext(mqtt_broker, "MQTT Broker", "Топики: commands/, responses/")
+System_Ext(database, "Database", "PostgreSQL/MySQL")
+
+' === Связи между компонентами ===
+Rel(device_api, device_storage, "Чтение/запись данных", "SQL")
+Rel(device_api, command_processor, "Отправка команд", "REST/ gRPC")
+Rel(device_api, event_publisher, "Триггер событий", "Внутренний вызов")
+
+Rel(command_processor, mqtt_client, "Отправка команд", "MQTT")
+Rel(mqtt_client, command_processor, "Ответы устройств", "MQTT")
+
+Rel(event_publisher, kafka_producer, "Публикация", "Kafka API")
+Rel(kafka_producer, kafka, "Отправка событий", "Kafka Protocol")
+
+' === Внешние взаимодействия ===
+Rel(client, device_api, "HTTP-запросы", "REST (OpenAPI)")
+Rel(mqtt_client, mqtt_broker, "Команды/ответы", "MQTT")
+Rel(device_storage, database, "Хранение данных", "JDBC/ORM")
+
+
+
+@enduml

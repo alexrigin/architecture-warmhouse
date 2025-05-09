@@ -1,0 +1,1109 @@
+openapi: 3.0.1
+info:
+  title: SmartHome Services Api
+  description: SmartHome Services Api
+  version: 1.0.0
+servers:
+  - url: https://127.0.0.1:{port}/{basePath}
+    description: The production API server
+    variables:
+      port:
+        enum:
+          - '8443'
+          - '443'
+        default: '8443'
+      basePath:
+        default: v1
+tags:
+  - name: DeviceManagement Service
+  - name: Automation Service
+  - name: Telemetry Service
+  - name: Users Service
+paths:
+  /devices:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+    get:
+      tags:
+        - DeviceManagement Service
+      summary: Получение списка устройств
+      description: ''
+      operationId: GetDevices
+      parameters:
+        - name: house_id
+          in: query
+          required: false
+          description: ''
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    post:
+      tags:
+        - DeviceManagement Service
+      summary: Создание нового устройства
+      description: ''
+      operationId: CreateDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreate'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+            X-Session-ID:
+              $ref: '#/components/headers/X-Session-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+  /devices/{device_id}:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+      - $ref: '#/components/parameters/device_id'
+    get:
+      tags:
+        - DeviceManagement Service
+      summary: Получение устройства по id
+      description: ''
+      operationId: GetDeviceById
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    patch:
+      tags:
+        - DeviceManagement Service
+      summary: Обновление устройства
+      description: ''
+      operationId: UpdateDevice
+      parameters:
+        - $ref: '#/components/parameters/device_id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+    delete:
+      tags:
+        - DeviceManagement Service
+      summary: Удаление устройства
+      description: ''
+      operationId: DeleteDevice
+      parameters:
+        - $ref: '#/components/parameters/device_id'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+  /devices/{device_id}/command:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+      - $ref: '#/components/parameters/device_id'
+    post:
+      tags:
+        - DeviceManagement Service
+      summary: Отправка команды на устройство
+      description: ''
+      operationId: SendDeviceCommand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCommand'
+      responses:
+        '200':
+          description: Команда успешно отправлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResponse'
+        '400':
+          description: Неверный формат команды
+        '404':
+          description: Устройство не найдено
+        '500':
+          description: Ошибка при выполнении команды
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandError'
+
+  /houses:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+    get:
+      tags:
+        - DeviceManagement Service
+      summary: Получение списка домов
+      description: ''
+      operationId: GetHouses
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/House'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    post:
+      tags:
+        - DeviceManagement Service
+      summary: Создание нового дома
+      description: ''
+      operationId: CreateHouse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HouseCreate'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+            X-Session-ID:
+              $ref: '#/components/headers/X-Session-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/House'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+  /houses/{house_id}:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+      - $ref: '#/components/parameters/house_id'
+    get:
+      tags:
+        - DeviceManagement Service
+      summary: Получение дома по id
+      description: ''
+      operationId: GetHouseById
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/House'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    patch:
+      tags:
+        - DeviceManagement Service
+      summary: Обновление дома
+      description: ''
+      operationId: UpdateHouse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HouseUpdate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/House'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+    delete:
+      tags:
+        - DeviceManagement Service
+      summary: Удаление дома
+      description: ''
+      operationId: DeleteHouse
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /users:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+    get:
+      tags:
+        - Users Service
+      summary: Получение списка пользователей
+      description: ''
+      operationId: GetUsers
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    post:
+      tags:
+        - Users Service
+      summary: Создание пользователя
+      description: ''
+      operationId: CreateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+            X-Session-ID:
+              $ref: '#/components/headers/X-Session-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+  /users/{user_id}:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+      - $ref: '#/components/parameters/user_id'
+    get:
+      tags:
+        - Users Service
+      summary: Получение пользователя по id
+      description: ''
+      operationId: GetUserById
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    patch:
+      tags:
+        - Users Service
+      summary: Обновление пользователя
+      description: ''
+      operationId: UpdateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+    delete:
+      tags:
+        - Users Service
+      summary: Удаление пользователя
+      description: ''
+      operationId: DeleteUser
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /scenarios:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+    get:
+      tags:
+        - Automation Service
+      summary: Получение списка сценариев
+      description: ''
+      operationId: GetScenarios
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scenario'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    post:
+      tags:
+        - Automation Service
+      summary: Создание нового сценария
+      description: ''
+      operationId: CreateScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioCreate'
+      responses:
+        '200':
+          description: Successful operation
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/X-Request-ID'
+            X-Session-ID:
+              $ref: '#/components/headers/X-Session-ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+  /scenarios/{scenario_id}:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+      - $ref: '#/components/parameters/scenario_id'
+    get:
+      tags:
+        - Automation Service
+      summary: Получение сценария по id
+      description: ''
+      operationId: GetScenarioById
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    patch:
+      tags:
+        - Automation Service
+      summary: Обновление сценария
+      description: ''
+      operationId: UpdateScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioUpdate'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+    delete:
+      tags:
+        - Automation Service
+      summary: Удаление сценария
+      description: ''
+      operationId: DeleteScenario
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+  /telemetry:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+    get:
+      tags:
+        - Telemetry Service
+      summary: Получение списка телеметрии
+      description: ''
+      operationId: GetTelemetry
+      parameters:
+        - name: device_id
+          in: query
+          required: false
+          description: Фильтр по device_id
+          schema:
+            type: string
+            format: uuid
+        - name: event_type
+          in: query
+          required: false
+          description: Фильтр по типу события
+          schema:
+            type: string
+        - name: from_date
+          in: query
+          required: false
+          description: Начальная дата для фильтрации
+          schema:
+            type: string
+            format: date-time
+        - name: to_date
+          in: query
+          required: false
+          description: Конечная дата для фильтрации
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Telemetry'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+  /telemetry/{telemetry_id}:
+    parameters:
+      - $ref: '#/components/parameters/X-Request-ID'
+      - $ref: '#/components/parameters/X-Session-ID'
+      - $ref: '#/components/parameters/X-User-ID'
+      - $ref: '#/components/parameters/telemetry_id'
+    get:
+      tags:
+        - Telemetry Service
+      summary: Получение записи телеметрии по id
+      description: ''
+      operationId: GetTelemetryById
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Telemetry'
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found response
+    delete:
+      tags:
+        - Telemetry Service
+      summary: Удаление записи телеметрии
+      description: ''
+      operationId: DeleteTelemetry
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid format
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/components/responses/UnexpectedError'
+
+components:
+  schemas:
+    Device:
+      title: Device
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: ad40ef14-4191-4f00-803e-78f65b6aef2b
+        name:
+          type: string
+          minimum: 1
+          maximum: 128
+          example: Датчик температуры в спальне
+        description:
+          type: string
+        house_id:
+          type: string
+          format: uuid
+          example: 7e4d1fa9-cf20-44de-b58d-ac43149792f1
+        type:
+          type: string
+          enum:
+            - temperature_sensor
+            - camera
+        status:
+          type: string
+          enum:
+            - 'on'
+            - 'off'
+        serial_number:
+          type: string
+          example: 21231 123456789
+        mac_address:
+          type: string
+          example: F0:98:9D:1C:93:F6
+        manufacturer:
+          type: string
+          example: manufacturer
+        model:
+          type: string
+          example: model
+        ip_address:
+          type: string
+          example: 192.168.123.132
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceProperty'
+        functions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceFunction'
+    DeviceProperty:
+      title: DeviceProperty
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          minimum: 1
+          maximum: 128
+          example: temperature
+        description:
+          type: string
+          example: Текущая температура в градусах Цельсия
+        type:
+          type: string
+          enum:
+            - value
+            - event
+          example: value
+        value_unit:
+          type: string
+          enum:
+            - number
+            - string
+            - bool
+          example: number
+      required:
+        - name
+        - type
+    DeviceFunction:
+      title: DeviceFunction
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 550e8400-e29b-41d4-a716-446655440001
+        name:
+          type: string
+          minimum: 1
+          maximum: 128
+          example: Управление питанием
+        description:
+          type: string
+          example: Включение/выключение устройства
+        type:
+          type: string
+          enum:
+            - on_off
+            - mode
+            - range
+            - toggle
+            - video_stream
+          example: on_off
+        parameters:
+          type: object
+          additionalProperties: true
+          example: {"param_1": 0}
+      required:
+        - name
+        - type
+    DeviceCreate:
+      allOf:
+        - $ref: '#/components/schemas/Device'
+        - type: object
+          required:
+            - name
+            - house_id
+            - type
+            - serial_number
+            - mac_address
+            - manufacturer
+            - model
+            - ip_address
+    DeviceUpdate:
+      allOf:
+        - $ref: '#/components/schemas/Device'
+
+    DeviceCommand:
+      type: object
+      properties:
+        function_id:
+          type: string
+          format: uuid
+          description: ID функции устройства
+          example: 550e8400-e29b-41d4-a716-446655440000
+        parameters:
+          type: object
+          additionalProperties: true
+          description: Параметры команды
+          example: {"brightness": 80}
+      required:
+        - function_id
+    CommandResponse:
+      type: object
+      properties:
+        command_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        status:
+          type: string
+          example: "done"
+        success:
+          type: boolean
+          example: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-01-01T12:00:00Z"
+    CommandError:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "DEVICE_UNAVAILABLE"
+        message:
+          type: string
+          example: "Устройство не отвечает"
+
+    User:
+      title: User
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: ad40ef14-4191-4f00-803e-78f65b6aef2b
+        full_name:
+          type: string
+          example: Иван Иванов
+        email:
+          type: string
+          example: ivan@yandex.ru
+        phone:
+          type: string
+          example: +7(999)999 99 99
+        password:
+          type: string
+          writeOnly: true
+        role:
+          type: string
+          example: User
+    UserCreate:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          required:
+            - full_name
+            - email
+            - phone
+            - role
+            - password
+    UserUpdate:
+      allOf:
+        - $ref: '#/components/schemas/User'
+    House:
+      title: House
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 7e4d1fa9-cf20-44de-b58d-ac43149792f1
+        name:
+          type: string
+          minimum: 1
+          maximum: 128
+          example: Дом на Рублевке
+        description:
+          type: string
+          example: Большой дом с бассейном
+    HouseCreate:
+      allOf:
+        - $ref: '#/components/schemas/House'
+        - type: object
+          required:
+            - name
+    HouseUpdate:
+      allOf:
+        - $ref: '#/components/schemas/House'
+
+    Scenario:
+      title: Scenario
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          minLength: 1
+          maxLength: 128
+          example: "Автоматическое освещение"
+        is_active:
+          type: boolean
+          example: true
+        trigger_logic:
+          type: string
+          enum: [and, or]
+          example: "and"
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScenarioTrigger'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScenarioAction'
+
+    ScenarioTrigger:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 550e8400-e29b-41d4-a716-446655440001
+        trigger_type:
+          type: string
+          enum: [device_property, scheduler]
+          example: "device_property"
+        device_property_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440002
+          description: Required when trigger_type is device_property
+        property_condition:
+          type: string
+          enum: [equals, greater_than, less_than]
+          example: "equals"
+          description: Required when trigger_type is device_property
+        property_value:
+          type: string
+          example: "25"
+          description: Required when trigger_type is device_property
+        scheduler:
+          type: object
+          properties:
+            start_time:
+              type: string
+              format: time
+              example: "18:00:00"
+            end_time:
+              type: string
+              format: time
+              example: "23:00:00"
+            days_of_week:
+              type: array
+              items:
+                type: string
+                enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+              example: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+          description: Required when trigger_type is scheduler
+
+    ScenarioAction:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 550e8400-e29b-41d4-a716-446655440003
+        device_function_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440004
+        action_value:
+          type: string
+          example: "on"
+        action_order:
+          type: integer
+          minimum: 1
+          example: 1
+
+    ScenarioCreate:
+      allOf:
+        - $ref: '#/components/schemas/Scenario'
+        - type: object
+          required:
+            - name
+            - trigger_logic
+            - triggers
+            - actions
+
+    ScenarioUpdate:
+      allOf:
+        - $ref: '#/components/schemas/Scenario'
+
+    Telemetry:
+      title: Telemetry
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          example: 550e8400-e29b-41d4-a716-446655440000
+        device_id:
+          type: string
+          format: uuid
+          example: ad40ef14-4191-4f00-803e-78f65b6aef2b
+        event_type:
+          type: string
+          example: "sensors_data"
+        event:
+          type: string
+          example: "Temperature changed"
+        data:
+          type: object
+          additionalProperties: true
+          example: {"value": 23.5, "unit": "Celsius"}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2023-01-01T12:00:00Z"
+
+    Error:
+      title: Error
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: '1000'
+        message:
+          type: string
+          example: Неизвестная ошибка
+  parameters:
+    X-Request-ID:
+      name: X-Request-ID
+      description: ''
+      in: header
+      schema:
+        $ref: '#/components/headers/X-Request-ID'
+    X-Session-ID:
+      name: X-Session-ID
+      in: header
+      schema:
+        $ref: '#/components/headers/X-Session-ID'
+    X-User-ID:
+      name: X-User-ID
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/headers/X-User-ID'
+    device_id:
+      name: device_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+        format: uuid
+    user_id:
+      name: user_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+        format: uuid
+    house_id:
+      name: house_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+        format: uuid
+    scenario_id:
+      name: scenario_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+        format: uuid
+    telemetry_id:
+      name: telemetry_id
+      in: path
+      required: true
+      description: ''
+      schema:
+        type: string
+        format: uuid
+  headers:
+    X-Request-ID:
+      description: Уникальный идентификатор запроса
+      schema:
+        type: string
+        format: uuid
+        example: 123e4567-e89b-12d3-a456-426614174000
+    X-Session-ID:
+      description: Уникальный идентификатор сессии
+      schema:
+        type: string
+        format: uuid
+        example: 1a6721c6-117f-4243-a809-cd3954813a0c
+    X-User-ID:
+      description: Идентификатор пользователя
+      schema:
+        type: string
+        format: uuid
+        example: 1a6721c6-117f-4243-a809-cd3954813a0c
+  responses:
+    UnexpectedError:
+      description: Unexpected Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  examples: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: jwt
