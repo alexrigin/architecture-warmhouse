@@ -66,5 +66,4 @@
 
 ### 4.1. OpenApi
 
-[SmartHome_Microservices_ER_diagram](openapi/api.yaml)
-
+[SmartHome_Microservices_ER_diagram](openapi/openapi.yaml)
