@@ -1,4 +1,4 @@
-# Project_template
+# README
 
 # Задание 1. Анализ и планирование
 
@@ -66,4 +66,4 @@
 
 ### 4.1. OpenApi
 
-[SmartHome_Microservices_ER_diagram](openapi/openapi.yaml)
+[Ссылка на спецификацию OpenApi](openapi/openapi.yaml)
