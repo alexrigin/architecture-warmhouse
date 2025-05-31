@@ -1,0 +1,43 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+
+title Component Diagram for DeviceManagement Service
+
+Container(api_gateway, "Api Gateway","", "Шлюз, отвечающий за балансировку, аутентификацию и маршрутизацию")
+
+Container_Boundary(b1, "DeviceManagement Service") {
+  Component(device_api, "DeviceManagement API", "", "Обрабатывает HTTP-запросы")
+  Component(business_logic, "Business Logic", "Бизнес-логика")
+  Component(device_storage, "Device Storage", "Слой взаимодействия с БД")
+  Component(command_processor, "Command Processor", "Отправка команд устройствам\nОбработка ответов")
+  Component(event_publisher, "Event Publisher", "Публикует события в Kafka\n(DeviceCreated, DeviceUpdated)")
+  Component(mqtt_client, "MQTT Client", "Подключение к MQTT-брокеру\nОтправка команд/получение ответов")
+  Component(kafka_producer, "Kafka Producer", "Отправка событий в Kafka")
+}
+
+ContainerDb(devices_db, "Devices DB", "PostgreSQL", "", $tags = "storage")
+ContainerQueue(kafka, "Apache Kafka", "Топик: device-events")
+ContainerQueue(mqtt_broker, "MQTT Broker", "Топики: commands/, responses/")
+
+Rel(api_gateway, device_api, "HTTP-запросы")
+
+Rel(device_api, business_logic, "Внутренний вызов")
+
+Rel(business_logic, command_processor, "Отправка команд", "Внутренний вызов")
+Rel(command_processor, mqtt_client, "Отправка команд", "MQTT")
+Rel(mqtt_client, command_processor, "Ответы устройств", "MQTT")
+Rel(mqtt_client, mqtt_broker, "Команды/ответы", "MQTT")
+
+Rel(business_logic, event_publisher, "Отправка событий", "Внутренний вызов")
+Rel(event_publisher, kafka_producer, "Отправка событий")
+Rel(kafka_producer, kafka, "Публикация событий")
+
+Rel(business_logic, device_storage, "Запись/получение данных из БД", "Внутренний вызов")
+Rel(device_storage, devices_db, "Хранение данных")
+
+SHOW_LEGEND()
+
+@enduml

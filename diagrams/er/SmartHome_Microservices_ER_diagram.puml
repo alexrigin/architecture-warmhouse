@@ -1,0 +1,118 @@
+@startuml
+
+skinparam linetype ortho
+
+
+entity users {
+  *user_id : uuid **<<PK>>**
+  --
+  *full_name : text
+  *email : text
+  *phone : text
+  *password_hash : string
+  *role : enum (<color Green>admin, user</color>)
+}
+
+entity houses {
+  *house_id : uuid **<<PK>>**
+  --
+  *user_id : uuid **<<FK>>**
+  *name : text
+  description : text
+}
+
+entity devices {
+  *device_id : uuid  **<<PK>>**
+  --
+  *house_id : uuid **<<FK>>**
+  *name : text
+  description : text
+  *type : enum
+  *status : enum (<color Grey> on/off </color>)
+  *serial_number : text
+  *mac_address : text
+  *manufacturer : text
+  *model : text
+  ip_address : text
+}
+
+entity device_functions {
+  *device_function_id : uuid  **<<PK>>**
+  --
+  *device_id : uuid **<<FK>>**
+  *name : text
+  description : text
+  *type : enum (<color Green> on_off, mode, range, toggle, video_stream </color>)
+  parameters : jsonb
+}
+
+entity device_properties {
+  *device_property_id : uuid  **<<PK>>**
+  --
+  *device_id : uuid **<<FK>>**
+  *name : text
+  description : text
+  *type : enum (<color Green> value, event </color>)
+  value_unit : enum (<color Green> number, string, bool</color>)
+}
+
+entity scenarios {
+  *scenario_id : uuid  **<<PK>>**
+  --
+  *name : text
+  description : text
+  *is_active : bool
+  *trigger_logic : enum (<color Green> and, or </color>) | default : "or"
+}
+
+entity scenario_triggers {
+  *scenario_trigger_id : uuid  **<<PK>>**
+  --
+  *scenario_id : uuid **<<FK>>**
+  *trigger_type : enum (<color Green> device_property, scheduler </color>)
+  --
+  device_property_id : uuid **<<FK>>**
+  property_condition : enum (<color Green> equals, greater_than и т.д</color>)
+  property_value : text
+  --
+  scheduler_id : uuid **<<FK>>**
+}
+
+entity schedulers {
+  *scheduler_id : uuid  **<<PK>>**
+  --
+  *start_time : time
+  end_time : time
+  days_of_week : text
+}
+
+entity scenario_actions {
+  *scenario_action_id : uuid  **<<PK>>**
+  --
+  *scenario_id : uuid **<<FK>>**
+  *device_function_id : uuid **<<FK>>**
+  *action_value : text
+  *action_order : number
+}
+
+entity telemetry_data {
+  *telemetry_data_id : uuid  **<<PK>>**
+  --
+  *device_id : uuid **<<FK>>**
+  *event_type : text
+  *event : text
+  *data : jsonb
+}
+
+users               ||--o{   houses
+houses              ||--o{   devices
+devices             ||--|{   device_functions
+devices             ||--o{   device_properties
+scenarios           ||--|{   scenario_triggers
+scenarios           ||--|{   scenario_actions
+device_properties   ||--o{   scenario_triggers
+schedulers          |o--     scenario_triggers
+device_functions    ||--o{   scenario_actions
+devices             ||--o{   telemetry_data
+
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title SmartHome-Monolith Context Diagram
+
+top to bottom direction
+
+Person(user, "User", "Пользователь системы умного дома")
+Person(admin, "Administrator", "Администратор системы")
+System(SmartHomeSystem, "SmartHome System", "Система умного дома")
+
+System_Ext(HeatingSystem1, "Система отопления №1", "Система отопления в доме №1")
+System_Ext(HeatingSystem2, "Система отопления №2", "Система отопления в доме №2")
+System_Ext(HeatingSystemN, "Система отопления №N", "Система отопления в доме №N")
+
+Rel(user, SmartHomeSystem, "Использует")
+Rel(admin,SmartHomeSystem,"Настраивает")
+Rel(SmartHomeSystem,HeatingSystem1,"интеграция")
+Rel(SmartHomeSystem,HeatingSystem2,"интеграция")
+Rel(SmartHomeSystem,HeatingSystemN,"интеграция")
+
+@enduml

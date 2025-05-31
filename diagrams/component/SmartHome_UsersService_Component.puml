@@ -1,0 +1,31 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+
+title Component Diagram for Users Service
+
+Container(api_gateway, "Api Gateway","", "Шлюз, отвечающий за балансировку, аутентификацию и маршрутизацию")
+
+Container_Boundary(b1, "Users Service") {
+  Component(users_api, "Users API", "", "Обрабатывает HTTP-запросы")
+  Component(users_service, "Users Service", "", "Логика работы с пользователями")
+  Component(auth_service, "Auth Service", "Аутентификация (JWT)\nГенерация/верификация токенов")
+  Component(users_storage, "Users Storage", "Слой взаимодействия с БД")
+}
+ContainerDb(users_db, "Users DB", "PostgreSQL", "", $tags = "storage")
+
+Rel(api_gateway, users_api, "HTTP-запросы")
+
+Rel(users_api, auth_service, "Создание/проверка токенов", "Внутренний вызов")
+Rel(users_api, users_service, "Создание/обновление пользователей", "Внутренний вызов")
+
+Rel(auth_service, users_storage, "сохранение/получение данных из БД", "Внутренний вызов")
+Rel(users_service, users_storage, "сохранение/получение данных из БД", "Внутренний вызов")
+
+Rel(users_storage, users_db, "read/write", "pq")
+
+SHOW_LEGEND()
+
+@enduml
